@@ -13,6 +13,8 @@ import Register from './pages/Register';
 const GamePlay = lazy(() => import('./pages/GamePlay'));
 const Create = lazy(() => import('./pages/Create'));
 const Studio = lazy(() => import('./pages/Studio'));
+const StudioPlayer = lazy(() => import('./pages/StudioPlayer'));
+const Multiplayer = lazy(() => import('./pages/Multiplayer'));
 const Social = lazy(() => import('./pages/Social'));
 const Messages = lazy(() => import('./pages/Messages'));
 const Communities = lazy(() => import('./pages/Communities'));
@@ -63,6 +65,8 @@ export default function App() {
           <Route path="/play/:slug" element={<GamePlay />} />
           <Route path="/create" element={<Create />} />
           <Route path="/studio/:id" element={<Protected><Studio /></Protected>} />
+          <Route path="/scene/:slug" element={<StudioPlayer />} />
+          <Route path="/multiplayer" element={<Protected><Multiplayer /></Protected>} />
           <Route path="/social" element={<Social />} />
           <Route path="/messages" element={<Protected><Messages /></Protected>} />
           <Route path="/communities" element={<Communities />} />
