@@ -190,7 +190,31 @@ export default function Clips() {
         <div className="space-y-3">
           <input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value.slice(0, 90) })} placeholder="Clip title" className="input w-full" />
           <textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value.slice(0, 300) })} placeholder="Describe the highlight" className="input min-h-[80px] w-full resize-none" />
-          <input value={form.mediaUrl} onChange={(event) => setForm({ ...form, mediaUrl: event.target.value })} placeholder="Optional MP4/WebM URL (https://)" className="input w-full" />
+          <div>
+            <p className="mb-1.5 text-[11px] uppercase tracking-wider text-muted">Video file</p>
+            <label className="flex cursor-pointer items-center justify-between gap-2 rounded-xl border border-dashed border-white/15 px-3 py-3 text-xs text-white/70 hover:border-cyan-300/40">
+              <span className="truncate">
+                {uploading ? 'Uploading & reading metadata…' : uploadName ?? 'Choose MP4 / WebM / MOV (max 12 MB)'}
+              </span>
+              <span className="rounded-lg bg-white/10 px-2 py-1 text-[10px] uppercase tracking-wide">Browse</span>
+              <input
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                className="hidden"
+                disabled={uploading}
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) ingestVideo(file);
+                  event.target.value = '';
+                }}
+              />
+            </label>
+            {form.mediaUrl && (
+              <p className="mt-1.5 truncate text-[10px] text-emerald-300">
+                Ready · {form.mediaUrl} · {form.duration}s
+              </p>
+            )}
+          </div>
           <div>
             <p className="mb-1.5 text-[11px] uppercase tracking-wider text-muted">Thumbnail</p>
             <div className="flex flex-wrap gap-2">

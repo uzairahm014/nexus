@@ -15,6 +15,7 @@ const PRIMARY = [
   { to: '/music', label: 'Music', icon: 'M9 18V6l10-2v12M9 18a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm10-2a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z' },
   { to: '/clips', label: 'Clips', icon: 'M4 5h16v14H4zM10 9l6 3-6 3z' },
   { to: '/battles', label: 'Battles', icon: 'M5 5l6 6m-6 0 6-6m2 12 6 6m0-6-6 6M4 4l4 4M16 20l4-4' },
+  { to: '/multiplayer', label: 'Multiplayer', icon: 'M4 12h4l2-5 3 10 2-5h5' },
   { to: '/events', label: 'Events', icon: 'M5 5h14v15H5zM5 9h14M9 3v4m6-4v4' },
   { to: '/marketplace', label: 'Marketplace', icon: 'M4 8h16l-1.5 12h-13zM8 8V6a4 4 0 0 1 8 0v2' },
 ];
