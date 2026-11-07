@@ -307,6 +307,73 @@ router.post('/conversations', requireAuth, (req: Request, res: Response) => {
   res.status(201).json({ conversationId: id });
 });
 
+router.post('/conversations/group', requireAuth, (req: Request, res: Response) => {
+  const schema = z.object({
+    title: z.string().min(2).max(80),
+    handles: z.array(z.string().min(1).max(40)).min(1).max(20),
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Group chats need a title (2-80 characters) and at least one member.' });
+    return;
+  }
+  const wanted = [...new Set(parsed.data.handles.map((h) => h.toLowerCase().replace(/^@/, '').trim()))].filter(Boolean).slice(0, 20);
+  const find = db.prepare('SELECT id, display_name FROM users WHERE handle = ?');
+  const memberIds: string[] = [];
+  const missing: string[] = [];
+  for (const handle of wanted) {
+    const row: any = find.get(handle);
+    if (!row) { missing.push(`@${handle}`); continue; }
+    if (row.id === myId(req)) continue;
+    if (isBlockedEitherWay(myId(req), row.id)) continue;
+    memberIds.push(row.id);
+  }
+  if (memberIds.length === 0) {
+    res.status(400).json({
+      error: missing.length
+        ? `No NEXUS profile found for ${missing.slice(0, 3).join(', ')}.`
+        : 'None of those people can join this conversation.',
+    });
+    return;
+  }
+  const id = uid();
+  db.prepare('INSERT INTO conversations (id, title, is_group, created_by, created_at) VALUES (?, ?, 1, ?, ?)').run(
+    id, cleanText(parsed.data.title, 80), myId(req), nowIso(),
+  );
+  const member = db.prepare('INSERT OR IGNORE INTO conversation_members (conversation_id, user_id, joined_at) VALUES (?, ?, ?)');
+  member.run(id, myId(req), nowIso());
+  const notify = db.prepare('INSERT INTO notifications (id, user_id, type, actor_id, entity_id, body, read, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?)');
+  for (const memberId of memberIds) {
+    member.run(id, memberId, nowIso());
+    notify.run(uid(), memberId, 'message', myId(req), id, `${me(req)!.displayName} added you to "${cleanText(parsed.data.title, 80)}".`, nowIso());
+  }
+  awardXp(myId(req), 10);
+  res.status(201).json({
+    conversationId: id,
+    conversation: { id, title: cleanText(parsed.data.title, 80), is_group: 1 },
+    added: memberIds.length,
+    missing,
+  });
+});
+
+router.post('/conversations/:id/members', requireAuth, (req: Request, res: Response) => {
+  const conversation: any = db.prepare('SELECT id, is_group FROM conversations WHERE id = ?').get(req.params.id);
+  if (!conversation) { res.status(404).json({ error: 'Conversation not found' }); return; }
+  if (!conversation.is_group) { res.status(400).json({ error: 'Only group conversations can take new members.' }); return; }
+  const member = db.prepare('SELECT 1 FROM conversation_members WHERE conversation_id = ? AND user_id = ?').get(req.params.id, myId(req));
+  if (!member) { res.status(403).json({ error: 'You are not a member of this conversation.' }); return; }
+  const handle = cleanText(req.body?.handle ?? '', 40).toLowerCase().replace(/^@/, '');
+  const target: any = db.prepare('SELECT id, display_name FROM users WHERE handle = ?').get(handle);
+  if (!target) { res.status(404).json({ error: 'Profile not found.' }); return; }
+  if (isBlockedEitherWay(myId(req), target.id)) { res.status(403).json({ error: 'That person cannot be added.' }); return; }
+  const existing = db.prepare('SELECT 1 FROM conversation_members WHERE conversation_id = ? AND user_id = ?').get(req.params.id, target.id);
+  if (existing) { res.status(409).json({ error: 'They are already in this conversation.' }); return; }
+  db.prepare('INSERT INTO conversation_members (conversation_id, user_id, joined_at) VALUES (?, ?, ?)').run(req.params.id, target.id, nowIso());
+  db.prepare('INSERT INTO notifications (id, user_id, type, actor_id, entity_id, body, read, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?)')
+    .run(uid(), target.id, 'message', myId(req), req.params.id, `${me(req)!.displayName} added you to a group chat.`, nowIso());
+  res.json({ ok: true, added: target.display_name });
+});
+
 router.get('/conversations/:id/messages', requireAuth, (req: Request, res: Response) => {
   const member = db.prepare('SELECT 1 FROM conversation_members WHERE conversation_id = ? AND user_id = ?').get(req.params.id, myId(req));
   if (!member) { res.status(403).json({ error: 'You are not a member of this conversation.' }); return; }
