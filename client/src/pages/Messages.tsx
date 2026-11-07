@@ -106,6 +106,34 @@ export default function Messages() {
     }
   };
 
+  const createGroup = async () => {
+    const handles = groupHandles
+      .split(/[,\s]+/)
+      .map((handle) => handle.trim().replace(/^@/, ''))
+      .filter(Boolean);
+    if (groupTitle.trim().length < 2 || handles.length === 0) {
+      toast.push('Add a group name and at least one member handle', 'error');
+      return;
+    }
+    setGroupSaving(true);
+    try {
+      const response = await api.post<{ conversation: Conversation }>('/social/conversations/group', {
+        title: groupTitle.trim(),
+        handles,
+      });
+      setGroupOpen(false);
+      setGroupTitle('');
+      setGroupHandles('');
+      setActiveId(response.conversation.id);
+      loadConversations();
+      toast.push('Group conversation created', 'success');
+    } catch (err) {
+      toast.push(err instanceof Error ? err.message : 'Could not create group', 'error');
+    } finally {
+      setGroupSaving(false);
+    }
+  };
+
   if (error) return <ErrorNote message={error} onRetry={() => { setError(null); loadConversations(); }} />;
 
   return (
@@ -124,6 +152,9 @@ export default function Messages() {
               New
             </button>
           </div>
+          <button type="button" className="btn-ghost mt-2 w-full text-[11px]" onClick={() => setGroupOpen(true)}>
+            + New group conversation
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto">
           {conversations === null && <div className="p-3"><Skeleton className="h-12 w-full" /></div>}
