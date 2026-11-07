@@ -45,7 +45,7 @@ router.get('/gallery/:slug', (req, res) => {
     res.json({ project: { ...row, data: JSON.parse(row.data) } });
 });
 router.post('/projects', auth_1.requireAuth, (req, res) => {
-    const schema = zod_1.z.object({ title: zod_1.z.string().min(2).max(80), data: zod_1.z.any() });
+    const schema = zod_1.z.object({ title: zod_1.z.string().min(2).max(80), data: zod_1.z.any().optional() });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) {
         res.status(400).json({ error: 'Projects need a title of 2+ characters.' });

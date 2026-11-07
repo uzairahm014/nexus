@@ -290,7 +290,7 @@ router.post('/experiences', auth_1.requireAuth, (req, res) => {
         description: zod_1.z.string().max(600).optional(),
         type: zod_1.z.enum(['quiz', 'poll', 'story', 'challenge', 'trivia', 'battle']).optional(),
         coverUrl: zod_1.z.string().max(400).optional(),
-        data: zod_1.z.any(),
+        data: zod_1.z.any().optional(),
         published: zod_1.z.boolean().optional(),
     });
     const parsed = schema.safeParse(req.body);
