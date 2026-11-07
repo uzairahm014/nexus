@@ -45,7 +45,7 @@ export function toPublicUser(row: any): PublicUser {
 }
 
 export function findUserById(id: string): PublicUser | null {
-  const row = db.prepare(`${SELECT_USER} FROM users WHERE id = ?`).get(id);
+  const row = db.prepare(`${SELECT_USER} WHERE id = ?`).get(id);
   return row ? toPublicUser(row) : null;
 }
 
