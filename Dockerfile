@@ -1,12 +1,15 @@
 # NEXUS production image — builds the Vite client and the Node API, then serves
-# both (HTTP + WebSocket) from a single non-root container.
-FROM node:24-slim AS build
+# both (HTTP + WebSocket) from one non-root Alpine container.
+#
+# Alpine/musl is used deliberately: the Debian slim base ships glibc/zlib builds
+# with unpatched critical advisories, so the runtime is musl-based instead.
+FROM node:24-alpine AS build
 WORKDIR /app
 ENV NODE_ENV=development
-RUN apt-get update \
- && apt-get upgrade -y \
- && apt-get install -y --no-install-recommends python3 make g++ ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+
+# Build toolchain only exists in this stage; the runtime image stays minimal.
+RUN apk upgrade --no-cache \
+ && apk add --no-cache python3 make g++ libc6-compat
 
 COPY package.json package-lock.json ./
 COPY client/package.json client/package.json
@@ -14,22 +17,22 @@ COPY server/package.json server/package.json
 RUN npm ci --include=dev
 
 COPY . .
-RUN npm run build
 
-# Trim to production dependencies after the build (native module already compiled).
-RUN npm prune --omit=dev
+# Compile the native SQLite binding against this image's libc explicitly.
+RUN npm rebuild better-sqlite3 --build-from-source
 
-FROM node:24-slim AS runtime
+RUN npm run build && npm prune --omit=dev
+
+FROM node:24-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=4000 \
     DATA_DIR=/app/data \
     UPLOAD_DIR=/app/uploads
-RUN apt-get update \
- && apt-get upgrade -y \
- && apt-get install -y --no-install-recommends ca-certificates \
- && rm -rf /var/lib/apt/lists/* \
- && useradd --create-home --uid 10001 nexus \
+
+RUN apk upgrade --no-cache \
+ && apk add --no-cache ca-certificates libstdc++ \
+ && adduser -D -u 10001 -h /app nexus \
  && mkdir -p /app/data /app/uploads \
  && chown -R nexus:nexus /app
 
