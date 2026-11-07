@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/session';
-import { Avatar, EmptyState, ErrorNote, Skeleton, Spinner, useToast } from '../components/ui';
+import { Avatar, EmptyState, ErrorNote, Modal, Skeleton, Spinner, useToast } from '../components/ui';
 import { timeAgo } from '../lib/format';
 
 interface Conversation {
@@ -37,6 +37,10 @@ export default function Messages() {
   const [sending, setSending] = useState(false);
   const [newHandle, setNewHandle] = useState('');
   const [creating, setCreating] = useState(false);
+  const [groupOpen, setGroupOpen] = useState(false);
+  const [groupTitle, setGroupTitle] = useState('');
+  const [groupHandles, setGroupHandles] = useState('');
+  const [groupSaving, setGroupSaving] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
 
   const loadConversations = () => {
