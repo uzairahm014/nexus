@@ -208,6 +208,21 @@ test('non-media uploads are rejected', async () => {
   assert.equal(res.status, 400);
 });
 
+test('discover aggregate returns real platform data', async () => {
+  const res = await fetch(`${base}/social/discover`);
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  for (const key of ['games', 'communities', 'clips', 'posts', 'creators']) {
+    assert.ok(Array.isArray(data[key]), `${key} should be an array`);
+  }
+  assert.ok(data.games.length > 0, 'discover lists seeded games');
+  assert.ok(data.games[0].slug, 'games carry slugs for routing');
+  if (data.creators.length) {
+    assert.ok(data.creators[0].handle, 'creators carry handles');
+    assert.equal(typeof data.creators[0].displayName, 'string');
+  }
+});
+
 test('realtime endpoint rejects anonymous sockets', async () => {
   const { WebSocket } = await import('ws');
   const socket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
