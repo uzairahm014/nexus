@@ -48,7 +48,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 export function useToast() {
   const context = useContext(ToastContext);
   if (!context) throw new Error('useToast must be used inside ToastProvider');
-  return context.push;
+  // Callable both as toast('message', 'success') and toast.push('message', 'success').
+  return useMemo(() => {
+    const callable = ((message: string, kind?: ToastKind) => context.push(message, kind)) as ((
+      message: string,
+      kind?: ToastKind,
+    ) => void) & { push: (message: string, kind?: ToastKind) => void };
+    callable.push = context.push;
+    return callable;
+  }, [context]);
 }
 
 /* ---------------------------------- atoms ---------------------------------- */
