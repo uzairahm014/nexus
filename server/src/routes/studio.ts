@@ -49,7 +49,7 @@ router.get('/gallery/:slug', (req: Request, res: Response) => {
 });
 
 router.post('/projects', requireAuth, (req: Request, res: Response) => {
-  const schema = z.object({ title: z.string().min(2).max(80), data: z.any() });
+  const schema = z.object({ title: z.string().min(2).max(80), data: z.any().optional() });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: 'Projects need a title of 2+ characters.' }); return; }
   const serialised = JSON.stringify(parsed.data.data ?? {});
