@@ -495,6 +495,62 @@ router.post('/blocks/:handle', auth_1.requireAuth, (req, res) => {
         .run((0, helpers_1.myId)(req), target.id, target.id, (0, helpers_1.myId)(req));
     res.json({ blocked: true });
 });
+/* ---------------------------------- discover ---------------------------------- */
+/**
+ * Single aggregate for the Discover page: trending games, communities, clips,
+ * recent posts and creators ranked by real follower/post data. One round trip
+ * instead of five, and it is the public entry point for platform discovery.
+ */
+router.get('/discover', (req, res) => {
+    const viewer = (0, helpers_1.myId)(req) || '';
+    const games = db_1.db
+        .prepare(`SELECT g.*, (SELECT COUNT(*) FROM game_scores s WHERE s.game_id = g.id) AS play_count,
+        (SELECT MAX(score) FROM game_scores s WHERE s.game_id = g.id) AS top_score
+       FROM games g ORDER BY g.featured DESC, g.title ASC LIMIT 24`)
+        .all();
+    const communities = db_1.db
+        .prepare(`SELECT c.id, c.slug, c.name, c.description, c.cover_url, c.created_at,
+        (SELECT COUNT(*) FROM community_members m WHERE m.community_id = c.id) AS member_count
+       FROM communities c ORDER BY member_count DESC LIMIT 8`)
+        .all();
+    const clips = db_1.db
+        .prepare(`SELECT c.*, u.handle, u.display_name, u.avatar_color, u.is_demo,
+        (SELECT COUNT(*) FROM clip_likes l WHERE l.clip_id = c.id) AS like_count,
+        (SELECT COUNT(*) FROM clip_comments cm WHERE cm.clip_id = c.id) AS comment_count,
+        EXISTS(SELECT 1 FROM clip_likes l WHERE l.clip_id = c.id AND l.user_id = ?) AS liked
+       FROM clips c JOIN users u ON u.id = c.author_id
+       ORDER BY c.created_at DESC LIMIT 8`)
+        .all(viewer);
+    const posts = db_1.db
+        .prepare(`${POST_SELECT} ORDER BY p.created_at DESC LIMIT 4`)
+        .all(viewer, viewer);
+    const creatorRows = db_1.db
+        .prepare(`SELECT u.id, u.handle, u.display_name, u.avatar_color, u.avatar_url, u.bio, u.level, u.is_demo,
+        (SELECT COUNT(*) FROM follows f WHERE f.following_id = u.id) AS follower_count,
+        (SELECT COUNT(*) FROM posts p WHERE p.author_id = u.id) AS post_count
+       FROM users u
+       ${viewer ? 'WHERE u.id <> ? AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = ?) AND u.id NOT IN (SELECT blocker_id FROM blocks WHERE blocked_id = ?)' : ''}
+       ORDER BY follower_count DESC, post_count DESC LIMIT 8`)
+        .all(...(viewer ? [viewer, viewer, viewer] : []));
+    res.json({
+        games,
+        communities,
+        clips: clips.map((c) => ({ ...c, liked: Boolean(c.liked) })),
+        posts: posts.map(shapePost),
+        creators: creatorRows.map((u) => ({
+            id: u.id,
+            handle: u.handle,
+            displayName: u.display_name,
+            avatarColor: u.avatar_color,
+            avatarUrl: u.avatar_url,
+            bio: u.bio,
+            level: u.level,
+            isDemo: Boolean(u.is_demo),
+            followers: u.follower_count ?? 0,
+            postCount: u.post_count ?? 0,
+        })),
+    });
+});
 router.get('/search', (req, res) => {
     const q = (0, helpers_1.cleanText)(req.query.q ?? '', 80);
     if (q.length < 2) {
