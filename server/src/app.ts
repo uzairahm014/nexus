@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import path from 'node:path';
 import fs from 'node:fs';
-import { attachUser } from './auth';
+import { optionalAuth } from './auth';
 import authRoutes from './routes/auth';
 import socialRoutes from './routes/social';
 import gameRoutes from './routes/games';
@@ -36,7 +36,7 @@ export function createApp() {
   );
   app.use(express.json({ limit: '512kb' }));
   app.use(cookieParser());
-  app.use(attachUser);
+  app.use(optionalAuth);
 
   const apiLimiter = rateLimit({ windowMs: 60_000, limit: 300, standardHeaders: true, legacyHeaders: false });
   const authLimiter = rateLimit({

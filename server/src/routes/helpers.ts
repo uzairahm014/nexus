@@ -14,8 +14,8 @@ export function cleanText(value: unknown, max = 2000): string {
     .slice(0, max);
 }
 
-export const paging = (req: Request): { limit: number; offset: number } => {
-  const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+export const paging = (req: Request, defaultLimit = 20): { limit: number; offset: number } => {
+  const limit = Math.min(60, Math.max(1, Number(req.query.limit) || defaultLimit));
   const offset = Math.max(0, Number(req.query.offset) || 0);
   return { limit, offset };
 };

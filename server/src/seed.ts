@@ -315,7 +315,7 @@ export function seedDatabase(force = false): { seeded: boolean; users: number; g
   const insertEvent = db.prepare(
     'INSERT INTO events (id, title, description, banner_url, kind, starts_at, ends_at, capacity, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
   );
-  const EVENTS: Array<[string, string, string, string, string, number, number]> = [
+  const EVENTS: Array<[string, string, string, string, number, number, number]> = [
     ['Friday Night Circuit', 'Three-lap time trial league on the Grid District circuit. Best of three runs counts.', '/art/banner-live.jpg', 'tournament', 2, 3, 16],
     ['Studio Jam: Violet Spire', 'Build a tower defence scene in one hour. Voting opens when the timer ends.', '/art/banner-create.jpg', 'event', 4, 5, 40],
     ['Soundwave Session 07', 'Live listening room for new NEXUS Originals tracks with the artists in chat.', '/art/comm-3.jpg', 'watchparty', 1, 2, 120],
@@ -400,7 +400,7 @@ export function seedDatabase(force = false): { seeded: boolean; users: number; g
   const insertBattle = db.prepare(
     'INSERT INTO battles (id, title, description, game_slug, status, banner_url, starts_at, prize, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
   );
-  const BATTLES: Array<[string, string, string, string, string, string, number]> = [
+  const BATTLES: Array<[string, string, string, string, string, number]> = [
     ['Circuit Showdown', 'Head-to-head Neon Racer time trial. Lower lap time wins.', 'neon-racer', 'open', '/art/banner-live.jpg', 2],
     ['Wave War', 'Highest Arena wave within one attempt.', 'arena', 'open', '/art/banner-community.jpg', 3],
     ['Spire Sprint', 'Fastest 10-wave tower defence clear.', 'tower-defence', 'live', '/art/banner-create.jpg', 1],
