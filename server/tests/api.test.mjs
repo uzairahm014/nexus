@@ -32,6 +32,7 @@ const { port } = server.address();
 const base = `http://127.0.0.1:${port}/api`;
 
 test.after(() => {
+  (server as unknown as { closeAllConnections?: () => void }).closeAllConnections?.();
   server.close();
   fs.rmSync(tmp, { recursive: true, force: true });
 });
@@ -209,13 +210,12 @@ test('non-media uploads are rejected', async () => {
 
 test('realtime endpoint rejects anonymous sockets', async () => {
   const { WebSocket } = await import('ws');
+  const socket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
   const outcome = await new Promise((resolve, reject) => {
-    const socket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
     const timer = setTimeout(() => reject(new Error('no response from /ws')), 4000);
     socket.on('message', (raw) => {
       clearTimeout(timer);
       resolve(JSON.parse(String(raw)));
-      socket.close();
     });
     // The server sends the rejection then closes; either signal proves the guard.
     socket.on('close', () => {
@@ -223,6 +223,7 @@ test('realtime endpoint rejects anonymous sockets', async () => {
       resolve({ t: 'closed' });
     });
   });
+  socket.terminate();
   assert.notEqual(outcome.t, 'welcome');
   assert.ok(outcome.t === 'error' || outcome.t === 'closed');
 });
