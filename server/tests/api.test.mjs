@@ -20,11 +20,13 @@ process.env.SEED_ON_START = '0';
 
 const { createApp } = await import('../dist/app.js');
 const { seedDatabase } = await import('../dist/seed.js');
+const { attachRealtime } = await import('../dist/realtime.js');
 
 seedDatabase(true);
 
 const app = createApp();
 const server = app.listen(0, '127.0.0.1');
+attachRealtime(server);
 await new Promise((resolve) => server.once('listening', resolve));
 const { port } = server.address();
 const base = `http://127.0.0.1:${port}/api`;
@@ -191,7 +193,7 @@ test('score submission validates auth and bounds', async () => {
 
   const leaderboard = await call(`/games/${slug}/leaderboard`);
   assert.equal(leaderboard.status, 200);
-  assert.ok(leaderboard.body.scores.some((entry) => entry.score === 1200));
+  assert.ok(leaderboard.body.leaderboard.some((entry) => entry.score === 1200));
 });
 
 test('non-media uploads are rejected', async () => {
