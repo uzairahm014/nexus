@@ -61,6 +61,19 @@ export function createApp() {
   app.use('/api', contentRoutes);
   app.use('/api/studio', studioRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/uploads', uploadRoutes);
+
+  // Uploaded media (clips, avatars, banners). Long cache: filenames are unique.
+  app.use(
+    '/uploads',
+    express.static(UPLOAD_DIR, {
+      maxAge: '30d',
+      setHeaders: (res) => {
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Content-Disposition', 'inline');
+      },
+    }),
+  );
 
   app.use('/api', (_req: Request, res: Response) => {
     res.status(404).json({ error: 'Unknown API route.' });

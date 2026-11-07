@@ -10,6 +10,9 @@ if (process.env.SEED_ON_START !== '0') {
   if (result.seeded) console.log(`[nexus] seeded demo dataset: ${result.users} users, ${result.games} games`);
 }
 
-app.listen(port, '0.0.0.0', () => {
+const server = app.listen(port, '0.0.0.0', () => {
   console.log(`[nexus] API listening on http://0.0.0.0:${port}`);
 });
+
+// Realtime multiplayer shares the HTTP server (path: /ws).
+attachRealtime(server);
