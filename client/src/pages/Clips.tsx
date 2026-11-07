@@ -9,8 +9,10 @@ export default function Clips() {
   const { user } = useAuth();
   const toast = useToast();
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '', thumb: '/art/clip-1.jpg', mediaUrl: '' });
+  const [form, setForm] = useState({ title: '', description: '', thumb: '/art/clip-1.jpg', mediaUrl: '', duration: 30 });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadName, setUploadName] = useState<string | null>(null);
   const [openClip, setOpenClip] = useState<Clip | null>(null);
   const [comments, setComments] = useState<Comment[] | null>(null);
   const [commentDraft, setCommentDraft] = useState('');
@@ -54,6 +56,28 @@ export default function Clips() {
     }
   };
 
+  const ingestVideo = async (file: File) => {
+    setUploading(true);
+    setUploadName(file.name);
+    try {
+      const result = await uploadFile(file);
+      const duration = await new Promise<number>((resolve) => {
+        const probe = document.createElement('video');
+        probe.preload = 'metadata';
+        probe.onloadedmetadata = () => resolve(Number.isFinite(probe.duration) ? Math.round(probe.duration) : 30);
+        probe.onerror = () => resolve(30);
+        probe.src = result.url;
+      });
+      setForm((current) => ({ ...current, mediaUrl: result.url, duration: Math.max(1, Math.min(180, duration)) }));
+      toast.push(`Uploaded ${file.name}`, 'success');
+    } catch (err) {
+      toast.push(err instanceof Error ? err.message : 'Upload failed', 'error');
+      setUploadName(null);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const upload = async () => {
     if (form.title.trim().length < 3) {
       toast.push('Give your clip a title', 'error');
@@ -66,11 +90,12 @@ export default function Clips() {
         description: form.description,
         thumbUrl: form.thumb,
         mediaUrl: form.mediaUrl || null,
-        duration: 30,
+        duration: form.duration,
       });
       toast.push('Clip published', 'success');
       setUploadOpen(false);
-      setForm({ title: '', description: '', thumb: '/art/clip-1.jpg', mediaUrl: '' });
+      setForm({ title: '', description: '', thumb: '/art/clip-1.jpg', mediaUrl: '', duration: 30 });
+      setUploadName(null);
       setToken((value) => value + 1);
     } catch (err) {
       toast.push(err instanceof Error ? err.message : 'Upload failed', 'error');
