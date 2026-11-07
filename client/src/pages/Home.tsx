@@ -39,7 +39,7 @@ export default function Home() {
       events: eventsRes.events ?? [],
       missions: missionsRes.missions ?? [],
       completed: missionsRes.completed ?? [],
-      creators: creatorsRes.users ?? creatorsRes.suggested ?? [],
+      creators: (creatorsRes as { users?: User[]; suggested?: User[] }).users ?? (creatorsRes as { suggested?: User[] }).suggested ?? [],
     };
   });
 

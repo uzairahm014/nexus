@@ -35,7 +35,7 @@ export default function Discover() {
       communities: communities.communities ?? [],
       clips: clips.clips ?? [],
       posts: posts.posts ?? [],
-      creators: creators.users ?? creators.suggested ?? [],
+      creators: (creators as { users?: User[]; suggested?: User[] }).users ?? (creators as { suggested?: User[] }).suggested ?? [],
     };
   });
 
