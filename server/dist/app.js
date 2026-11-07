@@ -85,6 +85,9 @@ function createApp() {
     });
     app.use('/api/auth', auth_2.default);
     app.use('/api', social_1.default);
+    // The web client addresses social resources under /api/social/*; keep both
+    // mounts so existing /api/<resource> callers keep working unchanged.
+    app.use('/api/social', social_1.default);
     app.use('/api', games_1.default);
     app.use('/api', content_1.default);
     app.use('/api/studio', studio_1.default);
