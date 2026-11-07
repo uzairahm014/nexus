@@ -231,6 +231,34 @@ export default function Messages() {
           </>
         )}
       </div>
+
+      <Modal open={groupOpen} onClose={() => setGroupOpen(false)} title="New group conversation">
+        <div className="space-y-3">
+          <input
+            value={groupTitle}
+            onChange={(event) => setGroupTitle(event.target.value.slice(0, 80))}
+            placeholder="Group name"
+            className="input w-full"
+          />
+          <input
+            value={groupHandles}
+            onChange={(event) => setGroupHandles(event.target.value.slice(0, 300))}
+            placeholder="Member handles, comma separated (@nova, @pixel)"
+            className="input w-full"
+          />
+          <p className="text-[10px] text-muted">
+            Every member must already have a NEXUS account. Groups are private to their members.
+          </p>
+          <div className="flex justify-end gap-2">
+            <button type="button" className="btn-ghost text-xs" onClick={() => setGroupOpen(false)}>
+              Cancel
+            </button>
+            <button type="button" className="btn-primary text-xs" onClick={createGroup} disabled={groupSaving}>
+              {groupSaving ? 'Creating…' : 'Create group'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

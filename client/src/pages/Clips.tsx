@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, type Clip, type Comment } from '../lib/api';
+import { api, uploadFile, type Clip, type Comment } from '../lib/api';
 import { useAuth } from '../lib/session';
 import { Avatar, Badge, EmptyState, ErrorNote, Modal, SectionHeader, Skeleton, useAsync, useToast } from '../components/ui';
 import { duration, timeAgo } from '../lib/format';
