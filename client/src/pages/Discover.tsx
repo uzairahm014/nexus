@@ -23,19 +23,13 @@ export default function Discover() {
   const [searching, setSearching] = useState(false);
 
   const state = useAsync<DiscoverData>(async () => {
-    const [games, communities, clips, posts, creators] = await Promise.all([
-      api.get<{ games: Game[] }>('/games'),
-      api.get<{ communities: Community[] }>('/social/communities'),
-      api.get<{ clips: Clip[] }>('/clips?limit=8'),
-      api.get<{ posts: Post[] }>('/social/feed?limit=4'),
-      api.get<{ users?: User[]; suggested?: User[] }>('/social/suggested').catch(() => ({ users: [] as User[] })),
-    ]);
+    const data = await api.get<DiscoverData>('/social/discover');
     return {
-      games: games.games ?? [],
-      communities: communities.communities ?? [],
-      clips: clips.clips ?? [],
-      posts: posts.posts ?? [],
-      creators: (creators as { users?: User[]; suggested?: User[] }).users ?? (creators as { suggested?: User[] }).suggested ?? [],
+      games: data.games ?? [],
+      communities: data.communities ?? [],
+      clips: data.clips ?? [],
+      posts: data.posts ?? [],
+      creators: data.creators ?? [],
     };
   });
 
