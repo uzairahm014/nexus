@@ -13,6 +13,7 @@ import gameRoutes from './routes/games';
 import contentRoutes from './routes/content';
 import studioRoutes from './routes/studio';
 import adminRoutes from './routes/admin';
+import uploadRoutes, { UPLOAD_DIR } from './routes/uploads';
 
 export function createApp() {
   const app = express();

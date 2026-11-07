@@ -1,5 +1,6 @@
 import { createApp } from './app';
 import { seedDatabase } from './seed';
+import { attachRealtime } from './realtime';
 
 const port = Number(process.env.PORT || 4000);
 const app = createApp();
