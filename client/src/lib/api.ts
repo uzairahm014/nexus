@@ -61,6 +61,33 @@ export const api = {
   del: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };
 
+export interface UploadResult {
+  url: string;
+  kind: 'video' | 'image';
+  mimeType: string;
+  size: number;
+}
+
+/** Multipart upload for clips, avatars and banners (12 MB cap, server-validated). */
+export async function uploadFile(file: File): Promise<UploadResult> {
+  const form = new FormData();
+  form.append('file', file);
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}/uploads`, {
+      method: 'POST',
+      body: form,
+      headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
+      credentials: 'include',
+    });
+  } catch {
+    throw new ApiError('Network unreachable while uploading. Try again.', 0);
+  }
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) throw new ApiError(payload?.error || 'Upload failed', response.status, payload);
+  return payload as UploadResult;
+}
+
 /* ---------------------------------- types ---------------------------------- */
 
 export interface User {
