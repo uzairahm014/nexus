@@ -45,7 +45,7 @@ export function GameCard({ game, wide = false }: { game: Game; wide?: boolean })
   );
 }
 
-export function CommunityCard({ community }: { community: Community }) {
+export function CommunityCard({ community, compact = false }: { community: Community; compact?: boolean }) {
   return (
     <Link
       to={`/c/${community.slug}`}
@@ -153,7 +153,15 @@ export function EventCard({
   );
 }
 
-export function TrackCard({ track, active, onPlay }: { track: Track; active: boolean; onPlay: () => void }) {
+export function TrackCard({
+  track,
+  active = false,
+  onPlay,
+}: {
+  track: Track;
+  active?: boolean;
+  onPlay?: () => void;
+}) {
   return (
     <button
       type="button"

@@ -252,25 +252,26 @@ export function Tabs<T extends string>({
   onChange,
   className = '',
 }: {
-  tabs: readonly T[];
+  tabs: readonly (T | { id: T; label: string })[];
   value: T;
   onChange: (next: T) => void;
   className?: string;
 }) {
+  const items = tabs.map((tab) => (typeof tab === 'string' ? { id: tab, label: tab } : tab));
   return (
     <div className={`no-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1 ${className}`}>
-      {tabs.map((tab) => (
+      {items.map((tab) => (
         <button
-          key={tab}
+          key={tab.id}
           type="button"
-          onClick={() => onChange(tab)}
+          onClick={() => onChange(tab.id)}
           className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-            value === tab
+            value === tab.id
               ? 'bg-white text-midnight shadow-glow'
               : 'border border-white/10 bg-white/[0.04] text-muted hover:text-white'
           }`}
         >
-          {tab}
+          {tab.label}
         </button>
       ))}
     </div>

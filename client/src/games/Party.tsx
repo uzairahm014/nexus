@@ -104,7 +104,7 @@ export default function Party({ paused, onFinish }: GameProps) {
       window.setTimeout(() => setPhase('done'), 900);
       return;
     }
-    setGuess({ target, tries, hint });
+    setGuess({ target, tries, hint, done: false });
     setInput('');
   };
 
