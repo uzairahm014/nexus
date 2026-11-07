@@ -32,7 +32,7 @@ const { port } = server.address();
 const base = `http://127.0.0.1:${port}/api`;
 
 test.after(() => {
-  (server as unknown as { closeAllConnections?: () => void }).closeAllConnections?.();
+  if (typeof server.closeAllConnections === 'function') server.closeAllConnections();
   server.close();
   fs.rmSync(tmp, { recursive: true, force: true });
 });
