@@ -40,7 +40,7 @@ function toPublicUser(row) {
     };
 }
 function findUserById(id) {
-    const row = db_1.db.prepare(`${SELECT_USER} FROM users WHERE id = ?`).get(id);
+    const row = db_1.db.prepare(`${SELECT_USER} WHERE id = ?`).get(id);
     return row ? toPublicUser(row) : null;
 }
 function signToken(userId, tokenVersion) {
