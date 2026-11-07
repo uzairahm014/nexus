@@ -57,6 +57,9 @@ export function createApp() {
 
   app.use('/api/auth', authRoutes);
   app.use('/api', socialRoutes);
+  // The web client addresses social resources under /api/social/*; keep both
+  // mounts so existing /api/<resource> callers keep working unchanged.
+  app.use('/api/social', socialRoutes);
   app.use('/api', gameRoutes);
   app.use('/api', contentRoutes);
   app.use('/api/studio', studioRoutes);
