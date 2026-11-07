@@ -99,6 +99,21 @@ export function requireAdmin(req: AuthedRequest, res: Response, next: NextFuncti
   next();
 }
 
+/** Role gate factory — used for admin/moderator-only route groups. */
+export function requireRole(...roles: string[]) {
+  return (req: AuthedRequest, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+    if (!roles.includes(req.user.role)) {
+      res.status(403).json({ error: 'You do not have permission to do that' });
+      return;
+    }
+    next();
+  };
+}
+
 export function hashPassword(password: string): string {
   return bcrypt.hashSync(password, 10);
 }
