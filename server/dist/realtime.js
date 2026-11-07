@@ -103,6 +103,8 @@ function startMatch(room) {
         }
         pushState(room);
     }, TICK_MS);
+    // Never hold the process open just for a match tick (also keeps tests exiting cleanly).
+    room.timer.unref?.();
 }
 function finishMatch(room) {
     if (room.timer) {
@@ -329,5 +331,6 @@ function attachRealtime(server) {
                 leaveRoom(socket);
         }
     }, 30_000);
+    heartbeat.unref?.();
     wss.on('close', () => clearInterval(heartbeat));
 }
