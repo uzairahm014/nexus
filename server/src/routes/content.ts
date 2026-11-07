@@ -296,7 +296,7 @@ router.post('/experiences', requireAuth, (req: Request, res: Response) => {
     description: z.string().max(600).optional(),
     type: z.enum(['quiz', 'poll', 'story', 'challenge', 'trivia', 'battle']).optional(),
     coverUrl: z.string().max(400).optional(),
-    data: z.any(),
+    data: z.any().optional(),
     published: z.boolean().optional(),
   });
   const parsed = schema.safeParse(req.body);
